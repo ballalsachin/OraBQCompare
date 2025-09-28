@@ -320,10 +320,32 @@ function renderCompareResults(results) {
   const container = $('compare-results-container');
   container.innerHTML = '';
   for (const res of results) {
+    if (!res) continue;                           // guard for undefined entries
     const box = document.createElement('div');
     box.style.border = '1px solid #e6e6e6';
     box.style.padding = '8px';
     box.style.marginBottom = '8px';
+    // If the pair-level handler returned an error for this pair, show it and continue
+    if (res.error) {
+      const titleErr = document.createElement('div');
+      titleErr.innerHTML = `<strong>Pair</strong>: ${escapeHtml(res.pairId || 'unknown')} <span style="color:red">Error</span>`;
+      box.appendChild(titleErr);
+      const err = document.createElement('div'); err.style.color = 'red'; err.textContent = res.error;
+      box.appendChild(err);
+      container.appendChild(box);
+      continue;
+    }
+    // Ensure a valid pair object exists
+    if (!res.pair || !res.pair.oracle || !res.pair.bq) {
+      const titleUnknown = document.createElement('div');
+      titleUnknown.innerHTML = `<strong>Pair</strong>: ${escapeHtml(res.pairId || 'unknown')} <span style="color:orange">Invalid result structure</span>`;
+      box.appendChild(titleUnknown);
+      const info = document.createElement('div'); info.style.color = '#666'; info.textContent = 'Result missing pair metadata.';
+      box.appendChild(info);
+      container.appendChild(box);
+      continue;
+    }
+   
     const title = document.createElement('div');
     title.innerHTML = `<strong>Pair</strong>: Oracle ${escapeHtml(res.pair.oracle.table)}.${escapeHtml(res.pair.oracle.name)}
                        <strong>vs</strong> BQ ${escapeHtml(res.pair.bq.table)}.${escapeHtml(res.pair.bq.name)}`;

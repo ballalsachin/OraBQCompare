@@ -160,12 +160,14 @@ ipcMain.handle('bq-list-columns', async (event, tableId) => {
   }
 });
 
-// IPC handler: compare multiple column pairs
 ipcMain.handle('compare-pairs', async (event, pairs) => {
   try {
     if (!Array.isArray(pairs) || pairs.length === 0) return { ok: false, error: 'No pairs provided' };
 
     const results = [];
+
+    // IPC handler: compare multiple column pairs
+    console.log('compare-pairs called with', pairs.length, 'pairs');
 
     for (const p of pairs) {
       // p.oracle.table, p.oracle.name ; p.bq.table, p.bq.name
@@ -182,7 +184,10 @@ ipcMain.handle('compare-pairs', async (event, pairs) => {
         if (!pool) throw new Error('Not connected to Oracle');
         const conn = await pool.getConnection();
         try {
-          const oraSql = `SELECT ${oracleIdCol} AS IDX, "${p.oracle.name}" AS VAL FROM ${p.oracle.table}`;
+          const oraSql = `SELECT \'${oracleIdCol}\' AS IDX, "${p.oracle.name}" AS VAL FROM ${p.oracle.table}`;
+          
+          console.log('oraSql:', oraSql);
+          
           const oraRes = await conn.execute(oraSql, [], { outFormat: oracledb.OUT_FORMAT_OBJECT });
           for (const row of oraRes.rows || []) {
             const idv = row.IDX;
@@ -204,7 +209,10 @@ ipcMain.handle('compare-pairs', async (event, pairs) => {
         const tableId = p.bq.table;
         // Fully-qualified table reference
         const fullTable = `\`${project}.${dataset}.${tableId}\``;
-        const bqQuery = `SELECT ${bqIdCol} AS IDX, ${p.bq.name} AS VAL FROM ${fullTable}`;
+        const bqQuery = `SELECT \'${bqIdCol}\' AS IDX, ${p.bq.name} AS VAL FROM ${fullTable}`;
+
+        console.log('bqQuery:', bqQuery);
+
         const [job] = await bigqueryClient.createQueryJob({ query: bqQuery, useLegacySql: false });
         const [rows] = await job.getQueryResults();
         for (const r of rows || []) {
@@ -216,7 +224,6 @@ ipcMain.handle('compare-pairs', async (event, pairs) => {
         results.push({ pairId, error: 'BigQuery read error: ' + (err.message || String(err)) });
         continue;
       }
-
       // Compare maps
       const matched = [];
       const mismatched = [];
@@ -252,6 +259,10 @@ ipcMain.handle('compare-pairs', async (event, pairs) => {
         counts: { matched: matched.length, mismatched: mismatched.length, inOracleNotBQ: inOracleNotBQ.length, inBQNotOracle: inBQNotOracle.length },
         sample: sampleRows
       });
+
+      // after computing result for a pair
+      console.log('compare result for', pairId, ':', { counts: {/*...*/}, sampleCount: sampleRows.length });
+
     } // end for pairs
 
     return { ok: true, results };

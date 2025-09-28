@@ -10,7 +10,7 @@
   "dependencies": {
     "oracledb": "^6.0.0",
     "@google-cloud/bigquery": "^8.0.0"
-},
+  },
   "devDependencies": {
     "electron": "^26.0.0",
     "electron-rebuild": "^3.2.5"
