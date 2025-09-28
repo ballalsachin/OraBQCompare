@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Oracle + BQ Explorer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 12px; }
+    .frame { border:1px solid #ddd; padding:12px; width:48%; box-sizing:border-box; }
+    #frames { display:flex; gap:12px; }
+    input, textarea { width:100%; margin-bottom:8px; padding:6px; box-sizing:border-box; }
+    #tables, #columns { list-style:none; padding:8px; border:1px solid #eee; height:300px; overflow:auto; }
+    li { padding:6px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+    li:hover { background:#f7f7f7; }
+    .two-col { display:flex; gap:12px; }
+    .col { width:50%; }
+    .small { width: calc(100% - 110px); display:inline-block; vertical-align:top; }
+    .btn { display:inline-block; width:100px; }
+    .search { margin-bottom:8px; padding:6px; width:100%; box-sizing:border-box; }
+    .meta { font-size:12px; color:#666; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <h2>Oracle Explorer and BQ Explorer</h2>
+ 
+  <div id="frames">
+    <div class="frame" id="oracle-frame">
+      <h3>Oracle Explorer</h3>
+      <input id="host" placeholder="hostname (e.g., localhost)"/>
+      <input id="port" placeholder="port (e.g., 1521)"/>
+      <input id="db" placeholder="service / SID (e.g., ORCLCDB)"/>
+      <input id="user" placeholder="username"/>
+      <input id="pass" type="password" placeholder="password"/>
+      <input id="libdir" placeholder="Optional: Instant Client libDir (C:\\oracle\\instantclient_23_7)"/>
+      <div style="margin-bottom:8px;">
+        <button id="connect-oracle" class="btn">Connect</button>
+        <button id="disconnect-oracle" class="btn" disabled>Disconnect</button>
+      </div>
+      <div id="oracle-status" class="meta"></div>
+      <input id="oracle-search" class="search" placeholder="Search tables..." />
+      <div class="two-col" style="margin-top:8px">
+        <div class="col"><ul id="oracle-tables"></ul></div>
+        <div class="col"><ul id="oracle-columns"></ul></div>
+      </div>
+    </div>
+
+    <div class="frame" id="bq-frame">
+      <h3>BQ Explorer</h3>
+      <input id="bq-project" placeholder="Google Cloud Project ID"/>
+      <input id="bq-dataset" placeholder="Dataset ID"/>
+      <textarea id="bq-service-account" placeholder="Paste service account JSON here" rows="8"></textarea>
+      <div style="margin-bottom:8px;">
+        <button id="connect-bq" class="btn">Connect</button>
+        <button id="disconnect-bq" class="btn" disabled>Disconnect</button>
+      </div>
+      <div id="bq-status" class="meta"></div>
+      <input id="bq-search" class="search" placeholder="Search tables..." />
+      <div class="two-col" style="margin-top:8px">
+        <div class="col"><ul id="bq-tables"></ul></div>
+        <div class="col"><ul id="bq-columns"></ul></div>
+      </div>
+    </div>
+  </div>
+
+    <hr style="margin:18px 0"/>
+    
+    <div class="frame" id="pairs-frame" style="width:100%;">
+    <h3>Selected Column Pairs</h3>
+    <div class="meta">Select one column from Oracle and one column from BigQuery to make a pair. Pairs appear below.</div>
+    <div style="margin-top:8px;">
+        <button id="clear-selection" class="btn">Clear Selection</button>
+        <button id="compare-pairs" class="btn">Compare</button>
+    </div>
+    <ul id="pairs-list" style="list-style:none; padding:8px; border:1px solid #eee; max-height:240px; overflow:auto; margin-top:8px;"></ul>
+    </div>
+
+    <hr style="margin:18px 0"/>
+
+    <div class="frame" id="compare-results-frame" style="width:100%;">
+    <h3>Compare Results</h3>
+    <div id="compare-results-meta" class="meta">No comparison run yet.</div>
+    <div id="compare-results-container" style="margin-top:8px;"></div>
+    </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
